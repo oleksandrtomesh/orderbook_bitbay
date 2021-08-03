@@ -7,7 +7,7 @@ import { Bid } from './components/bid';
 import { Ask } from './components/ask';
 import { useEffect, useState } from 'react';
 import './index.css';
-import { changeList } from './helpers/helpers';
+import { updateList } from './helpers/helpers';
 
 const useStyles = makeStyles({
   header: {
@@ -26,22 +26,17 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
-  
+
   const [currencies, setCurrencies] = useState('')
-  const [pair, setPair] = useState('BTC-PLN')
-  const [stats, setStats] = useState({});
+  const [pair, setPair] = useState('BTC-PLN') 
   const [snapshotBuy, setSnapshotBuy] = useState([])
   const [snapshotSell, setSnapshotSell] = useState([])
-
-  const currency = pair.split('-')[0]
+  const [currency, setCurrency] = useState('')
   const url = 'https://api.bitbay.net/rest/trading/'
   
-
   //first render, get currencies pairs
   useEffect(() => {
     let pairs = []
-
-
     const apiCall = async () => {
       await fetch(url + 'ticker')
         .then(res => res.json())
@@ -71,10 +66,11 @@ function App() {
       let data = JSON.parse(evt.data)
       if (data.action === 'push') {
         data.message.changes.forEach(change => {
-          changeList(change, setSnapshotBuy, setSnapshotSell)
+          updateList(change, setSnapshotBuy, setSnapshotSell)
         })
       }
     }
+    
     return (() => {
       if (ws.OPEN && !ws.CONNECTING) {
         ws.send(JSON.stringify({
@@ -105,6 +101,9 @@ function App() {
       setSnapshotBuy(data.body.buy)
       setSnapshotSell(data.body.sell)
     }
+
+    setCurrency(pair.split('-')[0])
+
     return (() => {
       if (ws.OPEN && !ws.CONNECTING) {
         ws.send(JSON.stringify({
@@ -118,29 +117,14 @@ function App() {
     })
   }, [pair])
 
-  //get stats
-  useEffect(() => {
-    let stats = {}
-    const apiCall = async () => {
-      await fetch(url + `stats/${pair}` )
-        .then(res => res.json())
-        .then(data => {
-          stats = data.stats
-        })
-        setStats(stats)
-    }
-
-    apiCall()
-  }, [pair])
-
   return (
     <Container maxWidth="lg">
       <Grid container spacing={1}>
         <Grid item xs={12}>
           <Paper className={classes.header} variant="outlined" square>
             <CurrencyPair currencies={currencies} setPair={setPair} pair={pair} />
-            <Spread spread={stats.v}/>
-            <MinMax max={stats.h} min={stats.l} />
+            <Spread pair={pair}/>
+            <MinMax url={url} pair={pair} />
           </Paper>
         </Grid>
         <Grid item xs={12} sm={6}>

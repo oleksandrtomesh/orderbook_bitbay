@@ -1,4 +1,4 @@
-export const changeList = (change, setSnapshotBuy, setSnapshotSell) => {
+export const updateList = (change, setSnapshotBuy, setSnapshotSell) => {
     //change list depend of push entry type and push action
     if (change.entryType === "Buy" && change.action === "remove") {
         //delete remove entry

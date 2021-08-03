@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/orderbook_bitbay/static/css/main.0a7e4375.chunk.css",
-    "main.js": "/orderbook_bitbay/static/js/main.91238e8c.chunk.js",
-    "main.js.map": "/orderbook_bitbay/static/js/main.91238e8c.chunk.js.map",
+    "main.js": "/orderbook_bitbay/static/js/main.8a55c3b9.chunk.js",
+    "main.js.map": "/orderbook_bitbay/static/js/main.8a55c3b9.chunk.js.map",
     "runtime-main.js": "/orderbook_bitbay/static/js/runtime-main.f3260a01.js",
     "runtime-main.js.map": "/orderbook_bitbay/static/js/runtime-main.f3260a01.js.map",
-    "static/js/2.9a809bbb.chunk.js": "/orderbook_bitbay/static/js/2.9a809bbb.chunk.js",
-    "static/js/2.9a809bbb.chunk.js.map": "/orderbook_bitbay/static/js/2.9a809bbb.chunk.js.map",
+    "static/js/2.c9292a68.chunk.js": "/orderbook_bitbay/static/js/2.c9292a68.chunk.js",
+    "static/js/2.c9292a68.chunk.js.map": "/orderbook_bitbay/static/js/2.c9292a68.chunk.js.map",
     "index.html": "/orderbook_bitbay/index.html",
     "static/css/main.0a7e4375.chunk.css.map": "/orderbook_bitbay/static/css/main.0a7e4375.chunk.css.map",
-    "static/js/2.9a809bbb.chunk.js.LICENSE.txt": "/orderbook_bitbay/static/js/2.9a809bbb.chunk.js.LICENSE.txt"
+    "static/js/2.c9292a68.chunk.js.LICENSE.txt": "/orderbook_bitbay/static/js/2.c9292a68.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.f3260a01.js",
-    "static/js/2.9a809bbb.chunk.js",
+    "static/js/2.c9292a68.chunk.js",
     "static/css/main.0a7e4375.chunk.css",
-    "static/js/main.91238e8c.chunk.js"
+    "static/js/main.8a55c3b9.chunk.js"
   ]
 }

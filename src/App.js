@@ -1,24 +1,160 @@
-import logo from './logo.svg';
-import './App.css';
+import { Container, Grid, Paper } from '@material-ui/core';
+import { CurrencyPair } from './components/currencyPair';
+import { makeStyles } from '@material-ui/core';
+import { Spread } from './components/spread';
+import { MinMax } from './components/minMax';
+import { Bid } from './components/bid';
+import { Ask } from './components/ask';
+import { useEffect, useState } from 'react';
+import './index.css';
+import { changeList } from './helpers/helpers';
+
+const useStyles = makeStyles({
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '1rem',
+    backgroundColor: '#D3D3D3',
+  },
+  column: {
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+
+  }
+})
 
 function App() {
+  const classes = useStyles()
+  
+  const [currencies, setCurrencies] = useState('')
+  const [pair, setPair] = useState('BTC-PLN')
+  const [stats, setStats] = useState({});
+  const [snapshotBuy, setSnapshotBuy] = useState([])
+  const [snapshotSell, setSnapshotSell] = useState([])
+
+  const currency = pair.split('-')[0]
+  const url = 'https://api.bitbay.net/rest/trading/'
+  
+
+  //first render, get currencies pairs
+  useEffect(() => {
+    let pairs = []
+
+
+    const apiCall = async () => {
+      await fetch(url + 'ticker')
+        .then(res => res.json())
+        .then(data => {
+          pairs = Object.keys(data.items)
+            .filter(pair => /PLN/.test(pair))
+            .sort()
+        })
+      setCurrencies(pairs)
+    }
+
+    apiCall()
+  }, [])
+
+  //subscribe orderbook-limited
+  useEffect(() => {
+    let ws = new WebSocket('wss://api.bitbay.net/websocket/')
+
+    ws.onopen = () => ws.send(JSON.stringify({
+      "action": "subscribe-public",
+      "module": "trading",
+      "path": `orderbook-limited/${pair}/10`
+    }))
+
+
+    ws.onmessage = evt => {
+      let data = JSON.parse(evt.data)
+      if (data.action === 'push') {
+        data.message.changes.forEach(change => {
+          changeList(change, setSnapshotBuy, setSnapshotSell)
+        })
+      }
+    }
+    return (() => {
+      if (ws.OPEN && !ws.CONNECTING) {
+        ws.send(JSON.stringify({
+          "action": "subscribe-public",
+          "module": "trading",
+          "path": `orderbook-limited/${pair}/10`
+        }))
+        ws.close()
+      }
+    })
+
+  }, [pair])
+
+  //make snapshot 
+  useEffect(() => {
+
+    let ws = new WebSocket('wss://api.bitbay.net/websocket/')
+
+    ws.onopen = () => ws.send(JSON.stringify({
+      "requestId": "78539fe0-e9b0-4e4e-8c86-70b36aa93d4f",
+      "action": "proxy",
+      "module": "trading",
+      "path": `orderbook-limited/${pair}/10`
+    }))
+
+    ws.onmessage = evt => {
+      let data = JSON.parse(evt.data)
+      setSnapshotBuy(data.body.buy)
+      setSnapshotSell(data.body.sell)
+    }
+    return (() => {
+      if (ws.OPEN && !ws.CONNECTING) {
+        ws.send(JSON.stringify({
+          "requestId": "78539fe0-e9b0-4e4e-8c86-70b36aa93d4f",
+          "action": "proxy",
+          "module": "trading",
+          "path": `orderbook-limited/${pair}/10`
+        }))
+        ws.close()
+      }
+    })
+  }, [pair])
+
+  //get stats
+  useEffect(() => {
+    let stats = {}
+    const apiCall = async () => {
+      await fetch(url + `stats/${pair}` )
+        .then(res => res.json())
+        .then(data => {
+          stats = data.stats
+        })
+        setStats(stats)
+    }
+
+    apiCall()
+  }, [pair])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container maxWidth="lg">
+      <Grid container spacing={1}>
+        <Grid item xs={12}>
+          <Paper className={classes.header} variant="outlined" square>
+            <CurrencyPair currencies={currencies} setPair={setPair} pair={pair} />
+            <Spread spread={stats.v}/>
+            <MinMax max={stats.h} min={stats.l} />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Paper className={classes.column} variant="outlined" square>
+            <Bid pair={pair} bid={snapshotBuy} currency={currency} />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Paper className={classes.column} variant="outlined" square >
+            <Ask pair={pair} ask={snapshotSell} currency={currency} />
+          </Paper>
+        </Grid>
+      </Grid>
+    </Container>
   );
 }
 
